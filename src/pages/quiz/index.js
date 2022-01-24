@@ -39,27 +39,26 @@ const Quiz = () => {
     }, [currentQuestionIndex, quizData]);
 
     useEffect(() => {
+        const loadQuiz = async () => {
+            try {
+                setLoading(true);
+                const questionsFromLocalStorage = getQuestionsFromLocalStorage('quiz_questions');
+                if (!!questionsFromLocalStorage) {
+                    setQuizData(questionsFromLocalStorage);
+                } else {
+                    const questionsFromApi = await getQuestions();
+                    setQuizData(questionsFromApi);
+                    saveQuestionsToLocalStorage('quiz_questions', questionsFromApi, 60 * 10 * 1000);
+                }
+            } catch (e) {
+                setQuizData(false);
+                console.log(e);
+            } finally {
+                setLoading(false);
+            }
+        };
         loadQuiz();
     }, []);
-
-    async function loadQuiz() {
-        try {
-            setLoading(true);
-            const questionsFromLocalStorage = getQuestionsFromLocalStorage('quiz_questions');
-            if (!!questionsFromLocalStorage) {
-                setQuizData(questionsFromLocalStorage);
-            } else {
-                const questionsFromApi = await getQuestions();
-                setQuizData(questionsFromApi);
-                saveQuestionsToLocalStorage('quiz_questions', questionsFromApi, 60 * 10 * 1000);
-            }
-        } catch (e) {
-            setQuizData(false);
-            console.log(e);
-        } finally {
-            setLoading(false);
-        }
-    }
 
     async function handleOptionSelect(type, index, optionValue = false) {
         if (questionIsAnsweared) return;
